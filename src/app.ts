@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(cors());
 
 app.get('/', (req: Request, res: Response) => {
-  res.send('Welcome to Course-review ❤️');
+  res.send('Welcome to Course-review-part-2 ❤️');
 });
 
 app.use('/api', router);
