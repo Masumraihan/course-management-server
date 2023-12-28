@@ -45,14 +45,19 @@ const getAllCoursesFromDb = async (query: TQueryObject) => {
   const durationInWeeksQuery = durationInWeeks(languageQuery.find(), query);
   const providerQuery = provider(durationInWeeksQuery.find(), query);
   const levelQuery = level(providerQuery.find(), query);
-  const { page, limit, query: pgQuery } = paginate(levelQuery.find(), query);
-  const total = await CourseModel.estimatedDocumentCount();
+  const {
+    page,
+    limit,
+    query: pgQuery,
+    total,
+  } = paginate(levelQuery.find(), query);
+  const totalDataCount = await total;
 
   const result = await pgQuery;
   const meta = {
     page,
     limit,
-    total,
+    total: totalDataCount,
   };
 
   return { meta, result };
@@ -91,12 +96,9 @@ const getSingleCourseFromDb = async (courseId: string) => {
 const updateCourseIntoDb = async (id: string, payload: Partial<TCourse>) => {
   const { tags, details, ...remainingData } = payload;
 
-
   const updatableData: Record<string, unknown> = { ...remainingData };
 
   const session = await mongoose.startSession();
-
-  
 
   if (details && Object.keys(details).length) {
     for (const [key, value] of Object.entries(details)) {
