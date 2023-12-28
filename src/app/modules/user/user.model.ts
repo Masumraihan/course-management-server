@@ -4,9 +4,10 @@
 import bcrypt from 'bcrypt';
 import mongoose, { Schema } from 'mongoose';
 import config from '../../config';
-import { TUser } from './user.interface';
+import { TRegisterUser } from '../auth/auth.interface';
+import { UserStaticMethod } from './user.interface';
 
-const UserSchema = new Schema<TUser>(
+const UserSchema = new Schema<TRegisterUser,UserStaticMethod>(
   {
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
@@ -34,4 +35,11 @@ UserSchema.pre('save', function (next) {
   }
 });
 
-export const UserModel = mongoose.model<TUser>('User', UserSchema);
+UserSchema.statics.isPasswordMatched = async function (
+  plainTextPass: string,
+  hashedPass: string,
+) {
+  return await bcrypt.compare(plainTextPass, hashedPass);
+};
+
+export const UserModel = mongoose.model<TRegisterUser,UserStaticMethod>('User', UserSchema);
