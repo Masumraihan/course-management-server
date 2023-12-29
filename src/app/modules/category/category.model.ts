@@ -8,6 +8,7 @@ const CategorySchema = new Schema<TCategory>(
   },
   {
     versionKey: false,
+    timestamps: true,
   },
 );
 

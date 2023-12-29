@@ -17,9 +17,25 @@ import CategoryModel from '../category/category.model';
 import { TCourse } from '../course/course.interface';
 import { CourseModel } from '../course/course.model';
 import { ReviewModel } from '../review/review.model';
+import { verifyJwt } from '../auth/auth.utils';
+import { UserModel } from '../user/user.model';
+import { JwtPayload } from 'jsonwebtoken';
 
 // CREATE A COURSE INTO DATABASE
-const createCourseIntoDb = async (payload: TCourse) => {
+const createCourseIntoDb = async (payload: TCourse, token: string) => {
+  const decoded = verifyJwt(token);
+  const { _id, email, role } = decoded as JwtPayload;
+  const user = await UserModel.findOne({ _id, email });
+  if (!user) {
+    throw new GenericError('Unauthorized Access', httpStatus.BAD_REQUEST);
+  }
+
+  if (user.role !== role) {
+    throw new GenericError('Unauthorized Access', httpStatus.BAD_REQUEST);
+  }
+
+  payload.createdBy = user._id;
+
   const categoryId = payload.categoryId;
   const isCategoryExist = await CategoryModel.exists({
     _id: categoryId,
@@ -27,8 +43,11 @@ const createCourseIntoDb = async (payload: TCourse) => {
   if (!isCategoryExist) {
     throw new GenericError('Category Not Found', 404);
   }
-  //const result = await CourseModel.create(payload);
-  return null;
+
+  payload.createdBy = user._id;
+
+  const result = await CourseModel.create(payload);
+  return result;
 };
 
 // GET ALL COURSES FROM DATABASE
@@ -50,7 +69,7 @@ const getAllCoursesFromDb = async (query: TQueryObject) => {
     limit,
     query: pgQuery,
     total,
-  } = paginate(levelQuery.find(), query);
+  } = paginate(levelQuery.find().populate('createdBy'), query);
   const totalDataCount = await total;
 
   const result = await pgQuery;

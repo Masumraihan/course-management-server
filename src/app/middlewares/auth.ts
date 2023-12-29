@@ -14,7 +14,7 @@ const auth = (...roles: TUserRole[]) => {
     // CHECK TOKEN IS GIVEN OR NOT
     if (!token) {
       throw new GenericError(
-        'You do not have the necessary permissions to access this resource.',
+        'Unauthorized Access',
         httpStatus.BAD_REQUEST,
       );
     }
@@ -28,7 +28,7 @@ const auth = (...roles: TUserRole[]) => {
 
     if (!user) {
       throw new GenericError(
-        'You do not have the necessary permissions to access this resource.',
+        'Unauthorized Access',
         httpStatus.BAD_REQUEST,
       );
     }
@@ -43,14 +43,14 @@ const auth = (...roles: TUserRole[]) => {
       )
     ) {
       throw new GenericError(
-        'You do not have the necessary permissions to access this resource.',
+        'Unauthorized Access',
         httpStatus.BAD_REQUEST,
       );
     }
 
     if (roles && !roles.includes(role)) {
       throw new GenericError(
-        'You do not have the necessary permissions to access this resource.',
+        'Unauthorized Access',
         httpStatus.BAD_REQUEST,
       );
     }

@@ -2,10 +2,16 @@ import catchAsync from '../../utils/catchAsync';
 import { CourseServices } from './course.service';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
+import GenericError from '../../errors/GenericError';
 
 // CREATE COURSE INTO DATABASE
 const createCourse = catchAsync(async (req, res) => {
-  const result = await CourseServices.createCourseIntoDb(req.body);
+  const token = req.headers.authorization;
+  if (!token) {
+    throw new GenericError('Unauthorized Access', httpStatus.BAD_REQUEST);
+  }
+
+  const result = await CourseServices.createCourseIntoDb(req.body, token);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.CREATED,
