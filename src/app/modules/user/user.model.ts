@@ -7,12 +7,14 @@ import config from '../../config';
 import { TRegisterUser } from '../auth/auth.interface';
 import { UserStaticMethod } from './user.interface';
 
-const UserSchema = new Schema<TRegisterUser,UserStaticMethod>(
+const UserSchema = new Schema<TRegisterUser, UserStaticMethod>(
   {
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: 0 },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    passwordChangedAt: { type: Date },
+    updatedAt: { type: String },
   },
   {
     versionKey: false,
@@ -42,4 +44,17 @@ UserSchema.statics.isPasswordMatched = async function (
   return await bcrypt.compare(plainTextPass, hashedPass);
 };
 
-export const UserModel = mongoose.model<TRegisterUser,UserStaticMethod>('User', UserSchema);
+UserSchema.statics.isJWTIssuedTimeGraterThenPasswordChangedTime = function (
+  passwordChangedTimeStamp: Date,
+  jwtIssuedTimeStamp: number,
+) {
+  const passwordChangedTime =
+    new Date(passwordChangedTimeStamp).getTime() / 1000;
+
+  return passwordChangedTime > jwtIssuedTimeStamp;
+};
+
+export const UserModel = mongoose.model<TRegisterUser, UserStaticMethod>(
+  'User',
+  UserSchema,
+);

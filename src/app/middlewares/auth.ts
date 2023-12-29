@@ -1,0 +1,61 @@
+import { NextFunction, Request, Response } from 'express';
+import httpStatus from 'http-status';
+import { JwtPayload } from 'jsonwebtoken';
+import GenericError from '../errors/GenericError';
+import { TUserRole } from '../modules/auth/auth.interface';
+import { verifyJwt } from '../modules/auth/auth.utils';
+import { UserModel } from '../modules/user/user.model';
+import catchAsync from '../utils/catchAsync';
+
+const auth = (...roles: TUserRole[]) => {
+  return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.headers.authorization;
+
+    // CHECK TOKEN IS GIVEN OR NOT
+    if (!token) {
+      throw new GenericError(
+        'You do not have the necessary permissions to access this resource.',
+        httpStatus.BAD_REQUEST,
+      );
+    }
+
+    // VERIFY TOKEN
+    const decoded = verifyJwt(token);
+
+    const { _id, email, role, iat } = decoded as JwtPayload;
+
+    const user = await UserModel.findOne({ _id, email });
+
+    if (!user) {
+      throw new GenericError(
+        'You do not have the necessary permissions to access this resource.',
+        httpStatus.BAD_REQUEST,
+      );
+    }
+
+    //req.user = decoded as JwtPayload;
+
+    if (
+      user.passwordChangedAt &&
+      UserModel.isJWTIssuedTimeGraterThenPasswordChangedTime(
+        user.passwordChangedAt,
+        iat as number,
+      )
+    ) {
+      throw new GenericError(
+        'You do not have the necessary permissions to access this resource.',
+        httpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (roles && !roles.includes(role)) {
+      throw new GenericError(
+        'You do not have the necessary permissions to access this resource.',
+        httpStatus.BAD_REQUEST,
+      );
+    }
+    next();
+  });
+};
+
+export default auth;

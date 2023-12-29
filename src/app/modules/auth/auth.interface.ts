@@ -7,6 +7,8 @@ export type TRegisterUser = {
   email: string;
   password: string;
   role: TUserRole;
+  updatedAt: string;
+  passwordChangedAt?: Date;
 };
 
 export type TLoginUser = {
@@ -18,4 +20,14 @@ export type TJwtPayload = {
   _id: Types.ObjectId;
   role: TUserRole;
   email: string;
+};
+
+export type TChangePassword = {
+  currentPassword: '123456';
+  newPassword: string;
+};
+
+export type TPasswordChangedHistory = {
+  user: Types.ObjectId;
+  passwords: string[];
 };

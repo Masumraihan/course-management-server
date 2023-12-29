@@ -15,4 +15,8 @@ export interface UserStaticMethod extends Model<TRegisterUser> {
     plainTextPass: string,
     hashedPass: string,
   ): Promise<boolean>;
+  isJWTIssuedTimeGraterThenPasswordChangedTime(
+    passwordChangedTimeStamp: Date,
+    jwtIssuedTimeStamp: number,
+  ): boolean;
 }

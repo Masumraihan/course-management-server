@@ -2,6 +2,8 @@ import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { AuthServices } from './auth.service';
+import { Request, Response } from 'express';
+import GenericError from '../../errors/GenericError';
 
 const userRegistration = catchAsync(async (req, res) => {
   const result = await AuthServices.registerUserIntoDb(req.body);
@@ -15,9 +17,6 @@ const userRegistration = catchAsync(async (req, res) => {
 });
 
 const loginUser = catchAsync(async (req, res) => {
-
-  
-
   const result = await AuthServices.loginUser(req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -27,7 +26,27 @@ const loginUser = catchAsync(async (req, res) => {
   });
 });
 
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const token = req.headers.authorization;
+
+  if (!token) {
+    throw new GenericError(
+      'You do not have the necessary permissions to access this resource.',
+      httpStatus.BAD_REQUEST,
+    );
+  }
+
+  const result = await AuthServices.changePassword(req.body, token);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Password changed successfully',
+    data: result,
+  });
+});
+
 export const AuthController = {
   userRegistration,
   loginUser,
+  changePassword,
 };

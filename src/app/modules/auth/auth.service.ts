@@ -1,10 +1,19 @@
-import bcrypt from 'bcrypt';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
+import moment from 'moment';
+import mongoose from 'mongoose';
 import GenericError from '../../errors/GenericError';
+import { ChangedPasswordHistoryModel } from '../changePassword/changePassword.model';
 import { UserModel } from '../user/user.model';
-import { TJwtPayload, TLoginUser, TRegisterUser } from './auth.interface';
-import { createToken } from './auth.utils';
+import {
+  TChangePassword,
+  TJwtPayload,
+  TLoginUser,
+  TRegisterUser,
+} from './auth.interface';
+import { createToken, hashedPassword, verifyJwt } from './auth.utils';
 
+//----------------
 const registerUserIntoDb = async (payload: TRegisterUser) => {
   const result = await UserModel.create(payload);
 
@@ -15,8 +24,8 @@ const registerUserIntoDb = async (payload: TRegisterUser) => {
   return userData;
 };
 
+// ----------------------------------
 const loginUser = async (payload: TLoginUser) => {
-
   // CHECK THE USER EXISTS OR NOT
   const isUserExists = await UserModel.findOne({
     username: payload?.username,
@@ -51,12 +60,104 @@ const loginUser = async (payload: TLoginUser) => {
   return { user, token };
 };
 
-const changePassword = async (payload: {
-  previousPass: string;
-  newPass: string;
-}) => {};
+// ---------------------------
+const changePassword = async (payload: TChangePassword, token: string) => {
+  const userData = verifyJwt(token);
+
+  const user = await UserModel.findById(userData?._id).select(
+    '+password +passwordHistory',
+  );
+
+  if (!user) {
+    throw new GenericError('User not found', httpStatus.BAD_REQUEST);
+  }
+
+  const lastModifiedPass = moment(user.updatedAt as string).format(
+    'YYYY-DD-MM [at] h:mm A',
+  );
+
+  const passwordHistory = await ChangedPasswordHistoryModel.findOne(
+    { _id: user._id },
+    { passwords: { $slice: -2 }, _id: 0 },
+  );
+
+  if (passwordHistory) {
+    for (const password of passwordHistory.passwords) {
+      // CHECK THE CURRENT PASSWORD IS MATCHED THE LAST 2 PASSWORD AND CURRENT PASSWORD
+      const isMatched = await UserModel.isPasswordMatched(
+        payload.newPassword,
+        password,
+      );
+      if (isMatched) {
+        {
+          throw new GenericError(
+            'user matched previous two password',
+            httpStatus.BAD_REQUEST,
+          );
+        }
+      }
+    }
+  }
+
+  //`Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${lastModifiedPass}).`
+
+  if (
+    !(await UserModel.isPasswordMatched(payload.currentPassword, user.password))
+  ) {
+    throw new GenericError(
+      'current password does not matched',
+      httpStatus.BAD_REQUEST,
+    );
+  }
+  if (await UserModel.isPasswordMatched(payload.newPassword, user.password)) {
+    throw new GenericError(
+      'new password and current password is same',
+      httpStatus.BAD_REQUEST,
+    );
+  }
+
+  const newPassword = await hashedPassword(payload.newPassword);
+
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+    const isPasswordChanged = await UserModel.findByIdAndUpdate(
+      user._id,
+      {
+        password: newPassword,
+        passwordChangedAt: new Date(),
+      },
+      { session },
+    );
+
+    if (!isPasswordChanged) {
+      throw new GenericError(
+        `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${lastModifiedPass}).`,
+        httpStatus.BAD_REQUEST,
+      );
+    }
+    await ChangedPasswordHistoryModel.findByIdAndUpdate(
+      isPasswordChanged._id,
+      { $push: { passwords: [user.password] } },
+      { upsert: true, session },
+    );
+
+    await session.commitTransaction();
+    await session.endSession();
+    return isPasswordChanged;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw new GenericError(
+      `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${lastModifiedPass}).`,
+      httpStatus.BAD_REQUEST,
+    );
+  }
+};
 
 export const AuthServices = {
   registerUserIntoDb,
   loginUser,
+  changePassword,
 };
