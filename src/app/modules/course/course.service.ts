@@ -27,8 +27,8 @@ const createCourseIntoDb = async (payload: TCourse) => {
   if (!isCategoryExist) {
     throw new GenericError('Category Not Found', 404);
   }
-  const result = await CourseModel.create(payload);
-  return result;
+  //const result = await CourseModel.create(payload);
+  return null;
 };
 
 // GET ALL COURSES FROM DATABASE

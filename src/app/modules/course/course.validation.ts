@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { calculateDurationWeeks } from './course.utils';
 
 // Define Zod schema for TTags
 const createTagsSchema = z.object({
@@ -21,18 +22,34 @@ const updateDetailsSchema = z.object({
 });
 
 // Define Zod schema for TCourse
-export const createCourseSchemaZod = z.object({
-  title: z.string().min(1),
-  instructor: z.string().min(1),
-  categoryId: z.string(),
-  price: z.number().positive(),
-  tags: z.array(createTagsSchema).nonempty(),
-  startDate: z.string(),
-  endDate: z.string(),
-  language: z.string(),
-  provider: z.string(),
-  details: createDetailsSchema,
-});
+export const createCourseSchemaZod = z
+  .object({
+    title: z.string().min(1),
+    instructor: z.string().min(1),
+    categoryId: z.string(),
+    price: z.number().positive(),
+    tags: z.array(createTagsSchema).nonempty(),
+    startDate: z.string(),
+    endDate: z.string(),
+    language: z.string(),
+    provider: z.string(),
+    durationInWeeks: z.number().optional(),
+    details: createDetailsSchema,
+  })
+  .refine(
+    courseData => {
+      if (courseData.durationInWeeks) {
+        const durationWeeks = calculateDurationWeeks(
+          courseData.startDate,
+          courseData.endDate,
+        );
+        return durationWeeks === courseData.durationInWeeks;
+      }
+    },
+    {
+      message: 'Duration weeks is incorrect',
+    },
+  );
 export const updateCourseSchemaZod = z.object({
   title: z.string().min(1).optional(),
   instructor: z.string().min(1).optional(),

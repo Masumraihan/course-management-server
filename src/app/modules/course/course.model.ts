@@ -3,6 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 import GenericError from '../../errors/GenericError';
 import { TCourse, TDetails, TTags } from './course.interface';
 import generateDurationWeeks from '../../utils/generateDurationWeeks';
+import { calculateDurationWeeks } from './course.utils';
 
 // Create a schema based on TTags
 const TagsSchema = new Schema<TTags>(
@@ -51,6 +52,7 @@ const CourseSchema = new Schema<TCourse>(
     provider: { type: String, required: true },
     durationInWeeks: { type: Number },
     details: DetailsSchema,
+    createdBy: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
   },
   {
     toJSON: {
@@ -63,20 +65,10 @@ const CourseSchema = new Schema<TCourse>(
 
 CourseSchema.pre('save', function (next) {
   if (this.startDate && this.endDate) {
-    if (this.endDate < this.startDate) {
-      throw new GenericError(
-        `EndDate:${this.endDate} should be greater then StartDate:${this.startDate}`,
-        httpStatus.BAD_REQUEST,
-      );
-    }
-    const startDate = new Date(this.startDate);
-    const endDate = new Date(this.endDate);
-
-    // get millisecond
-    const milliseconds = endDate.getTime() - startDate.getTime();
-
-    // calculate millisecond to weeks
-    const durationInWeeks = generateDurationWeeks(milliseconds);
+    const durationInWeeks = calculateDurationWeeks(
+      this.startDate,
+      this.endDate,
+    );
     this.durationInWeeks = durationInWeeks;
     next();
   }
@@ -99,7 +91,7 @@ CourseSchema.pre('findOneAndUpdate', function (next) {
     const durationInWeeks = generateDurationWeeks(milliseconds);
     this.updateOne({ durationInWeeks });
   }
-  next()
+  next();
 });
 
 export const CourseModel = mongoose.model<TCourse>('Course', CourseSchema);
