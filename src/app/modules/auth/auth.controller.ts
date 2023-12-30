@@ -31,8 +31,8 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
 
   if (!token) {
     throw new GenericError(
-      'You do not have the necessary permissions to access this resource.',
-      httpStatus.BAD_REQUEST,
+      'Unauthorized Access',
+      httpStatus.FORBIDDEN,
     );
   }
 

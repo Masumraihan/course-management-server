@@ -8,7 +8,7 @@ import GenericError from '../../errors/GenericError';
 const createReview = catchAsync(async (req, res) => {
   const token = req.headers.authorization;
   if (!token) {
-    throw new GenericError('Unauthorized Access', httpStatus.BAD_REQUEST);
+    throw new GenericError('Unauthorized Access', httpStatus.FORBIDDEN);
   }
 
   const result = await ReviewServices.createReviewIntoDb(req.body, token);

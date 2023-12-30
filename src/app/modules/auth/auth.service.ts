@@ -91,7 +91,7 @@ const changePassword = async (payload: TChangePassword, token: string) => {
       if (isMatched) {
         {
           throw new GenericError(
-            'user matched previous two password',
+            `Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${lastModifiedPass}).`,
             httpStatus.BAD_REQUEST,
           );
         }
@@ -99,19 +99,17 @@ const changePassword = async (payload: TChangePassword, token: string) => {
     }
   }
 
-  //`Password change failed. Ensure the new password is unique and not among the last 2 used (last used on ${lastModifiedPass}).`
-
   if (
     !(await UserModel.isPasswordMatched(payload.currentPassword, user.password))
   ) {
     throw new GenericError(
-      'current password does not matched',
+      `Current  Ensure the new password is unique and not among the last 2 used (last used on ${lastModifiedPass}).`,
       httpStatus.BAD_REQUEST,
     );
   }
   if (await UserModel.isPasswordMatched(payload.newPassword, user.password)) {
     throw new GenericError(
-      'new password and current password is same',
+      `New password and current password is same. Ensure the new password is unique and not among the last 2 used (last used on ${lastModifiedPass}).`,
       httpStatus.BAD_REQUEST,
     );
   }

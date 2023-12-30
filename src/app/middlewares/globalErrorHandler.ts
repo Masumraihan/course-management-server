@@ -29,11 +29,11 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
     errorObject.message = 'Invalid ID';
     errorObject.errorMessage = `${error.value} is not a valid ID!`;
     errorObject.errorDetails = { ...error };
-  } else if (error instanceof JsonWebTokenError) {
+  } else if (res?.statusCode) {
     errorObject.message = 'Unauthorized Access';
     errorObject.errorMessage =
       'You do not have the necessary permissions to access this resource.';
-      errorObject.errorDetails = null
+    errorObject.errorDetails = null;
   }
 
   res.status(errorObject.statusCode).json({

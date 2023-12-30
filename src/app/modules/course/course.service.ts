@@ -27,11 +27,11 @@ const createCourseIntoDb = async (payload: TCourse, token: string) => {
   const { _id, email, role } = decoded as JwtPayload;
   const user = await UserModel.findOne({ _id, email });
   if (!user) {
-    throw new GenericError('Unauthorized Access', httpStatus.BAD_REQUEST);
+    throw new GenericError('Unauthorized Access', httpStatus.FORBIDDEN);
   }
 
   if (user.role !== role) {
-    throw new GenericError('Unauthorized Access', httpStatus.BAD_REQUEST);
+    throw new GenericError('Unauthorized Access', httpStatus.FORBIDDEN);
   }
 
   payload.createdBy = user._id;
