@@ -11,7 +11,7 @@ import { TErrorResponse } from '../types/ErrorResponse';
 
 const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
   let errorObject: TErrorResponse = {
-    statusCode: 400,
+    statusCode: error.statusCode || 400,
     message: 'Error',
     errorDetails: {},
     errorMessage: error.message || 'something went wrong',

@@ -13,10 +13,7 @@ const auth = (...roles: TUserRole[]) => {
 
     // CHECK TOKEN IS GIVEN OR NOT
     if (!token) {
-      throw new GenericError(
-        'Unauthorized Access',
-        httpStatus.UNAUTHORIZED,
-      );
+      throw new GenericError('Unauthorized Access', httpStatus.UNAUTHORIZED);
     }
 
     // VERIFY TOKEN
@@ -27,10 +24,7 @@ const auth = (...roles: TUserRole[]) => {
     const user = await UserModel.findOne({ _id, email });
 
     if (!user) {
-      throw new GenericError(
-        'Unauthorized Access',
-        httpStatus.UNAUTHORIZED,
-      );
+      throw new GenericError('Unauthorized Access', httpStatus.UNAUTHORIZED);
     }
 
     //req.user = decoded as JwtPayload;
@@ -48,11 +42,9 @@ const auth = (...roles: TUserRole[]) => {
     //  );
     //}
 
+
     if (roles && !roles.includes(role)) {
-      throw new GenericError(
-        'Unauthorized Access',
-        httpStatus.UNAUTHORIZED,
-      );
+      throw new GenericError('Unauthorized Access', httpStatus.UNAUTHORIZED);
     }
     next();
   });
