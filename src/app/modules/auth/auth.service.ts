@@ -103,7 +103,7 @@ const changePassword = async (payload: TChangePassword, token: string) => {
     !(await UserModel.isPasswordMatched(payload.currentPassword, user.password))
   ) {
     throw new GenericError(
-      `Current  Ensure the new password is unique and not among the last 2 used (last used on ${lastModifiedPass}).`,
+      `Current password is not matched Ensure the new password is unique and not among the last 2 used (last used on ${lastModifiedPass}).`,
       httpStatus.BAD_REQUEST,
     );
   }
