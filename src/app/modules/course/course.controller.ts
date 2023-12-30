@@ -8,7 +8,7 @@ import GenericError from '../../errors/GenericError';
 const createCourse = catchAsync(async (req, res) => {
   const token = req.headers.authorization;
   if (!token) {
-    throw new GenericError('Unauthorized Access', httpStatus.FORBIDDEN);
+    throw new GenericError('Unauthorized Access', httpStatus.UNAUTHORIZED);
   }
 
   const result = await CourseServices.createCourseIntoDb(req.body, token);

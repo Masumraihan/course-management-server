@@ -3,13 +3,11 @@
 import { ErrorRequestHandler } from 'express';
 import mongoose from 'mongoose';
 import { ZodError } from 'zod';
+import config from '../config';
 import duplicateError from '../errors/duplicateError';
 import handleValidationError from '../errors/handleValidationError';
 import handleZodError from '../errors/handleZodError';
 import { TErrorResponse } from '../types/ErrorResponse';
-import config from '../config';
-import { JsonWebTokenError } from 'jsonwebtoken';
-//import config from '../config';
 
 const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
   let errorObject: TErrorResponse = {
@@ -29,7 +27,7 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
     errorObject.message = 'Invalid ID';
     errorObject.errorMessage = `${error.value} is not a valid ID!`;
     errorObject.errorDetails = { ...error };
-  } else if (res?.statusCode) {
+  } else if (res?.statusCode === 401) {
     errorObject.message = 'Unauthorized Access';
     errorObject.errorMessage =
       'You do not have the necessary permissions to access this resource.';

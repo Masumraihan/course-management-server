@@ -8,7 +8,7 @@ import GenericError from '../../errors/GenericError';
 const createCategory = catchAsync(async (req, res) => {
   const token = req.headers.authorization;
   if (!token) {
-    throw new GenericError('Unauthorized Access', httpStatus.FORBIDDEN);
+    throw new GenericError('Unauthorized Access', httpStatus.UNAUTHORIZED);
   }
 
   const result = await CategoryServices.createCategoryIntoDb(req.body, token);

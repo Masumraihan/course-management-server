@@ -15,7 +15,7 @@ const auth = (...roles: TUserRole[]) => {
     if (!token) {
       throw new GenericError(
         'Unauthorized Access',
-        httpStatus.FORBIDDEN,
+        httpStatus.UNAUTHORIZED,
       );
     }
 
@@ -29,7 +29,7 @@ const auth = (...roles: TUserRole[]) => {
     if (!user) {
       throw new GenericError(
         'Unauthorized Access',
-        httpStatus.FORBIDDEN,
+        httpStatus.UNAUTHORIZED,
       );
     }
 
@@ -51,7 +51,7 @@ const auth = (...roles: TUserRole[]) => {
     if (roles && !roles.includes(role)) {
       throw new GenericError(
         'Unauthorized Access',
-        httpStatus.FORBIDDEN,
+        httpStatus.UNAUTHORIZED,
       );
     }
     next();
