@@ -28,7 +28,9 @@ const createCategoryIntoDb = async (payload: TCategory, token: string) => {
 
 // GET ALL CATEGORIES FROM DATABASE
 const getAllCategoriesFromDb = async () => {
-  const result = await CategoryModel.find().select({ __v: 0 });
+  const result = await CategoryModel.find()
+    .select({ __v: 0 })
+    .populate('createdBy');
   return result;
 };
 

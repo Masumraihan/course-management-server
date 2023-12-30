@@ -46,7 +46,7 @@ const createCourseIntoDb = async (payload: TCourse, token: string) => {
 
   payload.createdBy = user._id;
 
-  const result = await CourseModel.create(payload);
+  const result = (await CourseModel.create(payload)).populate('createdBy');
   return result;
 };
 
@@ -87,14 +87,18 @@ const getSingleCourseFromDb = async (courseId: string) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const reviews = await ReviewModel.find({ courseId }).session(session);
+    const reviews = await ReviewModel.find({ courseId })
+      .session(session)
+      .populate('createdBy');
     if (reviews === null) {
       throw new GenericError(
         'Field to retrieve course',
         httpStatus.BAD_REQUEST,
       );
     }
-    const course = await CourseModel.findById(courseId).session(session);
+    const course = await CourseModel.findById(courseId)
+      .session(session)
+      .populate('createdBy');
     if (!course) {
       throw new GenericError(
         'Field to retrieve course',
@@ -128,17 +132,22 @@ const updateCourseIntoDb = async (id: string, payload: Partial<TCourse>) => {
     session.startTransaction();
 
     // update primitive data
-    const primitiveValueUpdate = await CourseModel.findByIdAndUpdate(
-      id,
-      updatableData,
-      {
-        runValidators: true,
-        session,
-      },
-    );
+    if (updatableData) {
+      const primitiveValueUpdate = await CourseModel.findByIdAndUpdate(
+        id,
+        updatableData,
+        {
+          runValidators: true,
+          session,
+        },
+      );
 
-    if (!primitiveValueUpdate) {
-      throw new GenericError('Failed to update course', httpStatus.BAD_REQUEST);
+      if (!primitiveValueUpdate) {
+        throw new GenericError(
+          'Failed to update course',
+          httpStatus.BAD_REQUEST,
+        );
+      }
     }
 
     // add new tags
@@ -180,7 +189,9 @@ const updateCourseIntoDb = async (id: string, payload: Partial<TCourse>) => {
         );
       }
     }
-    const result = await CourseModel.findById(id).session(session);
+    const result = await CourseModel.findById(id)
+      .session(session)
+      .populate('createdBy');
     if (!result) {
       throw new GenericError('Failed to update course', httpStatus.BAD_REQUEST);
     }

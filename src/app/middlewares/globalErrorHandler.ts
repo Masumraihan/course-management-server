@@ -7,6 +7,8 @@ import duplicateError from '../errors/duplicateError';
 import handleValidationError from '../errors/handleValidationError';
 import handleZodError from '../errors/handleZodError';
 import { TErrorResponse } from '../types/ErrorResponse';
+import config from '../config';
+import { JsonWebTokenError } from 'jsonwebtoken';
 //import config from '../config';
 
 const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
@@ -27,6 +29,11 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
     errorObject.message = 'Invalid ID';
     errorObject.errorMessage = `${error.value} is not a valid ID!`;
     errorObject.errorDetails = { ...error };
+  } else if (error instanceof JsonWebTokenError) {
+    errorObject.message = 'Unauthorized Access';
+    errorObject.errorMessage =
+      'You do not have the necessary permissions to access this resource.';
+      errorObject.errorDetails = null
   }
 
   res.status(errorObject.statusCode).json({
@@ -34,9 +41,7 @@ const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
     message: errorObject.message,
     errorMessage: errorObject.errorMessage,
     errorDetails: errorObject.errorDetails,
-    //stack: config.node_env === 'development' ? error.stack : null,
-    stack: error.stack,
-    error,
+    stack: config.node_env === 'development' ? error.stack : null,
   });
 };
 

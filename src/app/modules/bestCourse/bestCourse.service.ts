@@ -31,7 +31,12 @@ const getBestCourse = async () => {
       courseId: bestCourse[0]._id,
     })
       .session(session)
-      .populate('courseId')
+      .populate({
+        path: 'courseId',
+        populate: {
+          path: 'createdBy',
+        },
+      })
       .lean();
 
     if (!courseDetails) {

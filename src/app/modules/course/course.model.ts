@@ -60,6 +60,7 @@ const CourseSchema = new Schema<TCourse>(
     },
     versionKey: false,
     id: false,
+    timestamps: true,
   },
 );
 

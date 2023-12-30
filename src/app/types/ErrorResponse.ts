@@ -11,5 +11,5 @@ export type TErrorResponse = {
   errorDetails: {
     [key: string]: unknown;
     issues?: TIssue[];
-  };
+  } | null;
 };

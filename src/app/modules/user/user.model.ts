@@ -13,8 +13,8 @@ const UserSchema = new Schema<TRegisterUser, UserStaticMethod>(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, select: 0 },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
-    passwordChangedAt: { type: Date },
-    updatedAt: { type: String },
+    passwordChangedAt: { type: Date, select: 0 },
+    //updatedAt: { type: String },
   },
   {
     versionKey: false,

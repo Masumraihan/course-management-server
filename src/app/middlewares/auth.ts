@@ -22,7 +22,7 @@ const auth = (...roles: TUserRole[]) => {
     // VERIFY TOKEN
     const decoded = verifyJwt(token);
 
-    const { _id, email, role, iat } = decoded as JwtPayload;
+    const { _id, email, role } = decoded as JwtPayload;
 
     const user = await UserModel.findOne({ _id, email });
 
@@ -35,18 +35,18 @@ const auth = (...roles: TUserRole[]) => {
 
     //req.user = decoded as JwtPayload;
 
-    if (
-      user.passwordChangedAt &&
-      UserModel.isJWTIssuedTimeGraterThenPasswordChangedTime(
-        user.passwordChangedAt,
-        iat as number,
-      )
-    ) {
-      throw new GenericError(
-        'Unauthorized Access',
-        httpStatus.BAD_REQUEST,
-      );
-    }
+    //if (
+    //  user.passwordChangedAt &&
+    //  UserModel.isJWTIssuedTimeGraterThenPasswordChangedTime(
+    //    user.passwordChangedAt,
+    //    iat as number,
+    //  )
+    //) {
+    //  throw new GenericError(
+    //    'Unauthorized Access',
+    //    httpStatus.BAD_REQUEST,
+    //  );
+    //}
 
     if (roles && !roles.includes(role)) {
       throw new GenericError(

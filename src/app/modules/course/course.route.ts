@@ -16,6 +16,7 @@ router.get('/', CourseControllers.getAllCourses);
 router.get('/:courseId/reviews', CourseControllers.singleCourse);
 router.put(
   '/:courseId',
+  auth('admin'),
   validateRequest(CourseValidations.updateCourseSchemaZod),
   CourseControllers.updateCourse,
 );
